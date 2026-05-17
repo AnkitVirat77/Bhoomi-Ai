@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bhoomi AI — Create Account</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-dark:   #1a6b35;
+      --green-mid:    #217a3e;
+      --green-base:   #2d9a52;
+      --green-light:  #3db868;
+      --card-bg:      #d6edd9;
+      --card-border:  rgba(255,255,255,0.55);
+      --input-bg:     rgba(255,255,255,0.92);
+      --input-border: rgba(255,255,255,0.6);
+      --label-color:  #1a4a27;
+      --text-white:   #ffffff;
+      --text-off:     rgba(255,255,255,0.80);
+      --text-muted:   rgba(255,255,255,0.60);
+      --feature-bg:   rgba(255,255,255,0.10);
+      --feature-border: rgba(255,255,255,0.18);
+      --accent:       #2d9a52;
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ── Full page green background ── */
+    .page {
+      min-height: 100vh;
+      background: radial-gradient(ellipse 120% 100% at 30% 50%, #3db868 0%, #217a3e 45%, #1a5c30 100%);
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 0;
+      align-items: center;
+      padding: 48px 56px 48px 72px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* background decorative circles */
+    .page::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: -120px;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      pointer-events: none;
+    }
+    .page::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 200px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      pointer-events: none;
+    }
+
+    /* ── LEFT BRANDING ── */
+    .branding {
+      color: var(--text-white);
+      position: relative; z-index: 1;
+      padding-right: 60px;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 56px;
+    }
+
+    .logo-icon {
+      width: 56px; height: 56px;
+      background: rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      backdrop-filter: blur(4px);
+    }
+
+    .logo-text { display: flex; flex-direction: column; }
+
+    .logo-name {
+      font-family: 'Nunito', sans-serif;
+      font-size: 26px; font-weight: 800;
+      color: var(--text-white);
+      line-height: 1;
+    }
+
+    .logo-sub {
+      font-size: 12px; font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .hero-heading {
+      font-family: 'Nunito', sans-serif;
+      font-size: 52px; font-weight: 800;
+      line-height: 1.1;
+      color: var(--text-white);
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-desc {
+      font-size: 16px; line-height: 1.75;
+      color: var(--text-off);
+      max-width: 400px;
+      margin-bottom: 44px;
+    }
+
+    .features {
+      display: flex; flex-direction: column; gap: 14px;
+    }
+
+    .feature-card {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--feature-bg);
+      border: 1px solid var(--feature-border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      backdrop-filter: blur(6px);
+      transition: background 0.25s ease, transform 0.25s ease;
+    }
+
+    .feature-card:hover {
+      background: rgba(255,255,255,0.14);
+      transform: translateX(4px);
+    }
+
+    .feature-icon {
+      width: 42px; height: 42px; flex-shrink: 0;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    .feature-text {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-white);
+      line-height: 1.35;
+    }
+
+    /* ── RIGHT CARD ── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      position: relative; z-index: 1;
+      animation: fadeUp 0.7s 0.1s ease both;
+      box-shadow:
+        0 32px 80px rgba(0,0,0,0.22),
+        0 0 0 1px rgba(255,255,255,0.3) inset;
+    }
+
+    .card-title {
+      font-family: 'Nunito', sans-serif;
+      font-size: 26px; font-weight: 800;
+      color: #1a3d22;
+      margin-bottom: 4px;
+    }
+
+    .card-sub {
+      font-size: 13.5px; color: #4a7a58;
+      margin-bottom: 28px;
+    }
+
+    /* ── Fields ── */
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--label-color);
+      margin-bottom: 6px;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-wrap:focus-within {
+      border-color: var(--green-base);
+      box-shadow: 0 0 0 3px rgba(45,154,82,0.18);
+    }
+
+    .input-wrap .icon {
+      padding: 0 12px;
+      color: #7aab88;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .input-wrap input {
+      flex: 1;
+      padding: 12px 12px 12px 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #1a3d22;
+      background: transparent;
+      border: none; outline: none;
+    }
+
+    .input-wrap input::placeholder { color: #9ac4a8; }
+
+    .pass-toggle {
+      background: none; border: none; cursor: pointer;
+      padding: 0 12px; color: #7aab88; font-size: 15px;
+      transition: color 0.2s;
+    }
+    .pass-toggle:hover { color: var(--green-base); }
+
+    /* Strength */
+    .strength-row {
+      display: flex; gap: 4px; margin-top: 6px;
+    }
+    .strength-seg {
+      flex: 1; height: 3px; border-radius: 3px;
+      background: rgba(0,0,0,0.1);
+      transition: background 0.3s;
+    }
+    .strength-seg.active-weak   { background: #e05252; }
+    .strength-seg.active-fair   { background: #e09b2d; }
+    .strength-seg.active-good   { background: #4caf6e; }
+    .strength-seg.active-strong { background: #2d7a48; }
+
+    /* Error */
+    .field-error {
+      font-size: 11.5px; color: #c0392b;
+      margin-top: 4px; display: none;
+    }
+    .field-error.show { display: block; }
+    .input-wrap.err { border-color: #c0392b; }
+
+    /* Submit */
+    .btn-submit {
+      width: 100%; padding: 14px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px; font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #2d9a52, #1a7a3a);
+      border: none; border-radius: 10px;
+      cursor: pointer; margin-top: 8px;
+      box-shadow: 0 4px 18px rgba(45,154,82,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.2px;
+    }
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 7px 24px rgba(45,154,82,0.5);
+    }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* Footer links */
+    .signin-row {
+      text-align: center;
+      font-size: 13px;
+      color: #4a7a58;
+      margin-top: 16px;
+    }
+    .signin-row a {
+      color: #1a6b35; font-weight: 700;
+      text-decoration: none;
+    }
+    .signin-row a:hover { text-decoration: underline; }
+
+    .legal {
+      text-align: center;
+      font-size: 11.5px; color: #7aab88;
+      margin-top: 14px; line-height: 1.6;
+    }
+    .legal a { color: #1a6b35; text-decoration: none; font-weight: 600; }
+    .legal a:hover { text-decoration: underline; }
+
+
+    .error-msg {
+  display: none;
+  color: #e74c3c;
+  font-size: 13px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.error-msg.show {
+  display: block;
+}
+.password-error {
+  color: #d90429;
+  font-size: 13px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .page {
+        grid-template-columns: 1fr;
+        padding: 40px 24px;
+        gap: 40px;
+      }
+      .branding { padding-right: 0; }
+      .hero-heading { font-size: 38px; }
+      .card { max-width: 480px; margin: 0 auto; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- LEFT -->
+  <div class="branding">
+    <div class="logo-row">
+      <div class="logo-icon">🌱</div>
+      <div class="logo-text">
+        <span class="logo-name">Bhoomi AI</span>
+        <span class="logo-sub">Smart Agriculture Platform</span>
+      </div>
+    </div>
+
+    <h1 class="hero-heading">Join 50,000+<br>Smart Farmers</h1>
+    <p class="hero-desc">
+      Start your free journey with Bhoomi AI and transform how you manage your crops with cutting-edge AI technology.
+    </p>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="feature-icon">✅</div>
+        <span class="feature-text">Free forever plan — no credit card needed</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <span class="feature-text">Available in 12 regional languages</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <span class="feature-text">Unlimited scans &amp; crop history tracking</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT CARD -->
+  <div class="card">
+    <h2 class="card-title">Create your account 🌾</h2>
+    <p class="card-sub">Start protecting your crops with AI today</p>
+
+    <form id="signupForm" novalidate action="/submit" method="POST">
+      {% set messages = get_flashed_messages(with_categories=true) %}
+      <div class="field">
+        <label for="fullName">Full Name</label>
+        <div class="input-wrap" id="wrapName">
+          <span class="icon">👤</span>
+          <input type="text" id="fullName" name="name" placeholder="Full Name" required autocomplete="name"/>
+        </div>
+        <div class="field-error" id="nameErr">Please enter your full name.</div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email Address</label>
+        <div class="input-wrap" id="wrapEmail">
+          <span class="icon">✉️</span>
+          <input type="email" id="email" name="email" placeholder="your@gmail.com" pattern=".+@gmail\.com" required autocomplete="email"/>
+        </div>
+        
+        {% for category, message in messages %}
+        {% if category == 'email_error' %}
+          <span class="error-msg show">{{ message }}</span>
+        {% endif %}
+      {% endfor %}
+        <div class="field-error" id="emailErr">Please enter a valid email address.</div>
+      </div>
+
+      <div class="field">
+        <label for="phone">Phone Number <span style="font-weight:400;text-transform:none;letter-spacing:0">(Optional)</span></label>
+        <div class="input-wrap">
+          <span class="icon">📱</span>
+          <input type="tel" id="phone" name="mobile" placeholder="+91 9999999999" autocomplete="tel"/>
+        </div>
+      </div>
+   
+      <div class="field">
+        <label for="password">Create Password</label>
+        <div class="input-wrap" id="wrapPass">
+          <span class="icon">🔒</span>
+          <input type="password" id="password" name="password" placeholder="Min. 8 characters" required autocomplete="new-password"/>
+          <button type="button" class="pass-toggle" id="togglePass">👁</button>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    {% if category == 'password_error' %}
+      <div class="password-error">{{ message }}</div>
+    {% endif %}
+  {% endfor %}
+{% endwith %}
+        <div class="strength-row" id="strengthSegs">
+          <div class="strength-seg" id="s1"></div>
+          <div class="strength-seg" id="s2"></div>
+          <div class="strength-seg" id="s3"></div>
+          <div class="strength-seg" id="s4"></div>
+        </div>
+        <div class="field-error" id="passErr">Password must be at least 8 characters.</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">Create Account</button>
+    </form>
+
+    <p class="signin-row">Already have an account? <a href="/">Sign in</a></p>
+    <p class="legal">By creating an account, you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a></p>
+  </div>
+
+</div>
+
+<script>
+  const passEl = document.getElementById('password');
+  
+  // Toggle password
+  document.getElementById('togglePass').addEventListener('click', function() {
+    const show = passEl.type === 'password';
+    passEl.type = show ? 'text' : 'password';
+    this.textContent = show ? '🙈' : '👁';
+  });
+  
+  // Validation helper
+  function setErr(wrapId, errId, show) {
+    document.getElementById(wrapId).classList.toggle('err', show);
+    document.getElementById(errId).classList.toggle('show', show);
+  }
+  
+  // Submit validation
+  document.getElementById('signupForm').addEventListener('submit', function(e) {
+  
+    let valid = true;
+  
+    const name  = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const pass  = passEl.value;
+  
+    // Name
+    if (!name) {
+      setErr('wrapName','nameErr',true);
+      valid = false;
+    } else {
+      setErr('wrapName','nameErr',false);
+    }
+  
+    // Email
+    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email))  {
+      setErr('wrapEmail','emailErr',true);
+      valid = false;
+    } else {
+      setErr('wrapEmail','emailErr',false);
+    }
+  
+    // Password
+    if (pass.length < 8) {
+      setErr('wrapPass','passErr',true);
+      valid = false;
+    } else {
+      setErr('wrapPass','passErr',false);
+    }
+  
+    // 🚨 Only stop if invalid
+   // temporarily allow submit
+// e.preventDefault();
+  });
+  </script>
+</body>
+</html>

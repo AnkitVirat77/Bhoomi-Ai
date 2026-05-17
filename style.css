@@ -1,0 +1,32 @@
+body {
+    font-family: Arial;
+    background: #f0f8f5;
+    text-align: center;
+    background: url("img1.jpg") no-repeat ;
+    background-position: 100%;
+    background-size: cover;
+    
+
+  }
+  
+  .container {
+    margin-top: 50px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    background: green;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  #preview {
+    margin-top: 20px;
+    max-width: 300px;
+  }
+  
+  #result {
+    margin-top: 20px;
+    font-size: 18px;
+  }

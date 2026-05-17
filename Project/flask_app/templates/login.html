@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bhoomi AI — Sign In</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --forest:    #0d3b2e;
+      --deep:      #0a2e23;
+      --mid:       #145c42;
+      --leaf:      #1e8a58;
+      --lime:      #4cb97a;
+      --mint:      #a8e6c3;
+      --cream:     #f4f9f6;
+      --white:     #ffffff;
+      --text-dim:  rgba(255,255,255,0.55);
+      --text-muted:#6b9b82;
+      --shadow:    0 20px 60px rgba(13,59,46,0.35);
+      --glass-bg:  rgba(255,255,255,0.07);
+      --glass-border: rgba(255,255,255,0.13);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--deep);
+      display: flex;
+      align-items: stretch;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND ORBS ── */
+    .bg-orbs {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+    }
+    .orb-1 { width: 520px; height: 520px; background: var(--leaf); top: -120px; left: -100px; animation: drift 14s ease-in-out infinite alternate; }
+    .orb-2 { width: 380px; height: 380px; background: var(--mid);  bottom: -80px; left: 25%; animation: drift 18s ease-in-out infinite alternate-reverse; }
+    .orb-3 { width: 280px; height: 280px; background: var(--lime); top: 40%;  left: 40%; animation: drift 11s ease-in-out infinite alternate; }
+    @keyframes drift { from { transform: translate(0,0); } to { transform: translate(40px, 30px); } }
+
+    /* ── GRID NOISE ── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ── LAYOUT ── */
+    .wrapper {
+      position: relative; z-index: 1;
+      display: flex;
+      width: 100%; min-height: 100vh;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left {
+      flex: 1.15;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 70px;
+      position: relative;
+    }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 52px;
+    }
+    .logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--lime), var(--leaf));
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 8px 24px rgba(78,185,122,0.4);
+    }
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px; font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.3px;
+    }
+    .logo-text span { color: var(--lime); }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.08;
+      margin-bottom: 18px;
+      letter-spacing: -1.5px;
+    }
+    .hero-title .accent { color: var(--lime); }
+
+    .hero-sub {
+      font-size: 17px;
+      color: var(--text-dim);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 420px;
+      margin-bottom: 56px;
+    }
+
+    /* Feature pills */
+    .features { display: flex; flex-direction: column; gap: 20px; }
+
+    .feat {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 18px 22px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      max-width: 420px;
+      transition: transform 0.25s ease, background 0.25s ease;
+      cursor: default;
+    }
+    .feat:hover { transform: translateX(6px); background: rgba(255,255,255,0.11); }
+
+    .feat-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .fi-1 { background: rgba(76,185,122,0.2); }
+    .fi-2 { background: rgba(30,138,88,0.25); }
+    .fi-3 { background: rgba(168,230,195,0.15); }
+
+    .feat-body { display: flex; flex-direction: column; gap: 2px; }
+    .feat-title { font-size: 14px; font-weight: 600; color: var(--white); }
+    .feat-desc  { font-size: 12.5px; color: var(--text-dim); font-weight: 300; }
+
+    /* ── RIGHT PANEL ── */
+    .right {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 50px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      padding: 48px 44px;
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.1);
+      animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px; font-weight: 700;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .card-sub {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-bottom: 36px;
+    }
+
+    /* Inputs */
+    .field {
+      position: relative;
+      margin-bottom: 18px;
+    }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--mint);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-icon {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      font-size: 16px;
+      pointer-events: none;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .field input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 14px 44px 14px 46px;
+      font-size: 15px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      color: var(--white);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .field input::placeholder { color: rgba(255,255,255,0.28); }
+    .field input:focus {
+      border-color: var(--lime);
+      background: rgba(76,185,122,0.08);
+      box-shadow: 0 0 0 3px rgba(76,185,122,0.15);
+    }
+    .field input:focus ~ .input-icon,
+    .field .input-wrap:focus-within .input-icon { color: var(--lime); }
+
+    .toggle-pw {
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      font-size: 16px; color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .toggle-pw:hover { color: var(--lime); }
+
+    .row-forgot {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 26px;
+    }
+    .link-subtle {
+      font-size: 13px;
+      color: var(--lime);
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+    .link-subtle:hover { opacity: 0.7; }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--lime), var(--leaf));
+      border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--white);
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+      box-shadow: 0 6px 24px rgba(76,185,122,0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.12), transparent);
+      border-radius: inherit;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(76,185,122,0.45); filter: brightness(1.05); }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* Divider */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0;
+    }
+    .divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+    .divider-text { font-size: 12px; color: var(--text-dim); font-weight: 500; letter-spacing: 0.5px; }
+
+    /* Social */
+    .socials { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .btn-social {
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      padding: 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      font-size: 13.5px; font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--white);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      text-decoration: none;
+    }
+    .btn-social:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-1px);
+    }
+    .btn-social .s-icon { font-size: 17px; }
+
+    .register-row {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 13.5px;
+      color: var(--text-dim);
+    }
+    .register-row a {
+      color: var(--lime);
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 4px;
+      transition: opacity 0.2s;
+    }
+    .register-row a:hover { opacity: 0.75; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(60px);
+      background: var(--leaf);
+      color: var(--white);
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+      transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.3s;
+      opacity: 0; z-index: 100;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .left { display: none; }
+      .right { padding: 32px 20px; }
+      .card { padding: 36px 28px; max-width: 100%; }
+    }
+    @media (max-width: 480px) {
+      .card { border-radius: 20px; padding: 30px 22px; }
+      .card-title { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- background depth -->
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="wrapper">
+
+  <!-- LEFT BRANDING -->
+  <section class="left">
+    <div class="logo-mark">
+      <div class="logo-icon">🌱</div>
+      <span class="logo-text">Bhoomi<span> AI</span></span>
+    </div>
+
+    <h1 class="hero-title">
+      Smart Farming<br>
+      Starts <span class="accent">Here.</span>
+    </h1>
+    <p class="hero-sub">
+      AI-Powered Crop Intelligence that helps farmers grow better, earn more, and waste less — every single season.
+    </p>
+
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon fi-1">🔬</div>
+        <div class="feat-body">
+          <span class="feat-title">AI Crop Detection</span>
+          <span class="feat-desc">Instant disease & pest identification from leaf photos</span>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon fi-2">🤖</div>
+        <div class="feat-body">
+          <span class="feat-title">Smart Assistant</span>
+          <span class="feat-desc">Real-time advisory in your regional language, 24/7</span>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon fi-3">🛒</div>
+        <div class="feat-body">
+          <span class="feat-title">Agri Marketplace</span>
+          <span class="feat-desc">Sell produce directly & get best market prices</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT LOGIN CARD -->
+  <section class="right">
+    <div class="card">
+      <h2 class="card-title">Welcome back 👋</h2>
+      <p class="card-sub">Sign in to your Bhoomi AI account</p>
+      
+      <form action="/login" method="POST">
+
+        <div class="field">
+          <label>Email address</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉️</span>
+            <input type="email" name="email" placeholder="example@example.com" required>
+          </div>
+        </div>
+      
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            
+            <!-- ✅ FIXED BUTTON TYPE -->
+            <button type="button" class="toggle-pw" id="togglePw">👁️</button>
+          </div>
+        </div>
+      
+        <!-- ✅ MOVE BUTTON INSIDE FORM -->
+        <button class="btn-primary" type="submit">Sign In</button>
+      
+      </form>
+
+      <div class="row-forgot">
+        <a href="#" class="link-subtle">Forgot password?</a>
+      </div>
+
+      <!-- <button class="btn-primary" id="signInBtn" type="button">Sign In</button> -->
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">or continue with</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="socials">
+        <a href="/login/google" class="btn-social">
+          <span class="s-icon">
+            <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M43.611 20.083H42V20H24v8h11.303C33.653 32.597 29.288 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" fill="#FFC107"/>
+              <path d="M6.306 14.691l6.571 4.819C14.655 15.108 19.001 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" fill="#FF3D00"/>
+              <path d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0124 36c-5.269 0-9.619-3.418-11.285-8.148l-6.522 5.025C9.505 39.556 16.227 44 24 44z" fill="#4CAF50"/>
+              <path d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" fill="#1976D2"/>
+            </svg>
+          </span>
+          Google
+        </a>
+        <a href="#" class="btn-social">
+          <span class="s-icon">📱</span>
+          Phone OTP
+        </a>
+      </div>
+
+      <p class="register-row">
+        Don't have an account?<a href="/signup">Create one</a>
+      </p>
+    </div>
+  </section>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const togglePw = document.getElementById('togglePw');
+  const pwInput  = document.getElementById('password');
+  
+  togglePw.addEventListener('click', () => {
+    const visible = pwInput.type === 'password';
+    pwInput.type = visible ? 'text' : 'password';
+    togglePw.textContent = visible ? '🙈' : '👁️';
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bhoomi AI — Smart Agriculture Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g1: #0a5c2f;
+  --g2: #1a8a4a;
+  --g3: #2db966;
+  --g4: #5dd48a;
+  --g5: #b8f0cc;
+  --g6: #e8faf0;
+  --white: #ffffff;
+  --cream: #faf8f2;
+  --gray1: #1a1f2e;
+  --gray2: #374151;
+  --gray3: #6b7280;
+  --gray4: #9ca3af;
+  --gray5: #e5e7eb;
+  --gray6: #f9fafb;
+  --glass: rgba(255,255,255,0.72);
+  --glass-border: rgba(255,255,255,0.5);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.10);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
+  --shadow-green: 0 8px 32px rgba(29,138,74,0.20);
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --sidebar-w: 240px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 15px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--gray1);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+h1,h2,h3,h4,h5 { font-family: 'Sora', sans-serif; }
+
+/* ===== TOAST ===== */
+#toast-container {
+  position: fixed; top: 24px; right: 24px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.toast {
+  background: var(--white); border-radius: var(--radius-sm);
+  padding: 14px 20px; box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; gap: 12px;
+  min-width: 280px; max-width: 360px;
+  font-size: 0.875rem; font-weight: 500;
+  border-left: 4px solid var(--g2);
+  animation: slideIn 0.3s ease;
+  transition: opacity 0.3s ease;
+}
+.toast.error { border-left-color: #ef4444; }
+.toast-icon { font-size: 1.1rem; }
+.toast.success .toast-icon { color: var(--g2); }
+.toast.error .toast-icon { color: #ef4444; }
+@keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 24px; border-radius: var(--radius-sm);
+  font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.875rem;
+  cursor: pointer; border: none; transition: all 0.22s ease;
+  text-decoration: none; white-space: nowrap;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--g2), var(--g1));
+  color: white; box-shadow: var(--shadow-green);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(29,138,74,0.35); }
+.btn-secondary {
+  background: var(--g6); color: var(--g1); border: 1.5px solid var(--g5);
+}
+.btn-secondary:hover { background: var(--g5); }
+.btn-ghost { background: transparent; color: var(--g2); }
+.btn-ghost:hover { background: var(--g6); }
+.btn-danger { background: #fef2f2; color: #ef4444; border: 1.5px solid #fecaca; }
+.btn-danger:hover { background: #fecaca; }
+.btn-full { width: 100%; }
+.btn-lg { padding: 14px 32px; font-size: 1rem; }
+.btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+
+/* ===== INPUT ===== */
+.input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.input-group label { font-size: 0.8rem; font-weight: 600; color: var(--gray2); letter-spacing: 0.03em; }
+.input-field {
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--gray5); background: var(--white);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--gray1);
+  transition: all 0.2s ease; outline: none; width: 100%;
+}
+.input-field:focus { border-color: var(--g3); box-shadow: 0 0 0 3px rgba(45,185,102,0.12); }
+.input-field::placeholder { color: var(--gray4); }
+
+/* ===== APP LAYOUT ===== */
+.app-layout { display: flex; flex-direction: column; background: var(--gray6); min-height: 100vh; }
+.app-body { display: flex; flex: 1; padding-top: 64px; }
+
+/* ===== NAVBAR ===== */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 64px;
+  background: var(--glass); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; z-index: 1000;
+  box-shadow: 0 1px 20px rgba(0,0,0,0.06);
+}
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-brand-icon {
+  width: 36px; height: 36px; background: linear-gradient(135deg, var(--g2), var(--g1));
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; color: white;
+}
+.nav-brand-name { font-family: 'Sora', sans-serif; font-size: 1.15rem; font-weight: 800; color: var(--g1); }
+.nav-brand-beta {
+  font-size: 0.62rem; font-weight: 700; background: var(--g5); color: var(--g1);
+  padding: 2px 7px; border-radius: 20px; margin-left: 4px; font-family: 'Sora', sans-serif;
+}
+.nav-center { display: flex; gap: 4px; }
+.nav-item {
+  padding: 7px 14px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500;
+  color: var(--gray3); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+}
+.nav-item:hover { background: var(--g6); color: var(--g2); }
+.nav-item.active { background: var(--g6); color: var(--g1); font-weight: 600; }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.nav-icon-btn {
+  width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--gray3); transition: all 0.2s; background: none; border: none; font-size: 1rem;
+  position: relative;
+}
+.nav-icon-btn:hover { background: var(--g6); color: var(--g1); }
+.nav-badge {
+  position: absolute; top: -2px; right: -2px; width: 16px; height: 16px;
+  background: var(--g2); color: white; font-size: 0.6rem; font-weight: 700;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+}
+.nav-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--g3), var(--g2));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+  font-family: 'Sora', sans-serif;
+}
+.sidebar-toggle {
+  display: none; width: 36px; height: 36px; border-radius: 10px; border: none;
+  background: none; cursor: pointer; color: var(--gray2); font-size: 1.1rem;
+  align-items: center; justify-content: center;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: var(--sidebar-w); background: var(--white);
+  border-right: 1px solid var(--gray5);
+  height: calc(100vh - 64px); position: fixed; top: 64px; left: 0;
+  display: flex; flex-direction: column;
+  box-shadow: 2px 0 20px rgba(0,0,0,0.04);
+  z-index: 100; overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+.sidebar-section { padding: 20px 12px 8px; }
+.sidebar-section-label {
+  font-size: 0.68rem; font-weight: 700; color: var(--gray4); letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 0 8px; margin-bottom: 6px;
+}
+.sidebar-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+  color: var(--gray3); font-size: 0.875rem; font-weight: 500;
+  margin-bottom: 2px; position: relative;
+}
+.sidebar-item:hover { background: var(--g6); color: var(--g1); }
+.sidebar-item.active { background: linear-gradient(135deg, #e8faf0, #d1f5e0); color: var(--g1); font-weight: 600; }
+.sidebar-item.active::before {
+  content: ''; position: absolute; left: 0; top: 20%; bottom: 20%;
+  width: 3px; background: var(--g2); border-radius: 0 3px 3px 0;
+}
+.sidebar-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+.sidebar-item:hover .sidebar-icon, .sidebar-item.active .sidebar-icon { background: rgba(29,138,74,0.12); color: var(--g2); }
+.sidebar-badge {
+  margin-left: auto; background: var(--g5); color: var(--g1);
+  font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+}
+.sidebar-footer { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--gray5); }
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: var(--radius-sm); background: var(--g6); cursor: pointer; transition: all 0.2s;
+}
+.sidebar-user:hover { background: var(--g5); }
+.sidebar-user-avatar {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--g3), var(--g2));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 0.8rem;
+}
+.sidebar-user-name { font-size: 0.825rem; font-weight: 600; color: var(--gray1); }
+.sidebar-user-role { font-size: 0.72rem; color: var(--gray4); }
+
+/* ===== MAIN ===== */
+.main-content {
+  margin-left: var(--sidebar-w); flex: 1; padding: 28px 32px;
+  min-height: calc(100vh - 64px); max-width: 1200px;
+}
+.page-header { margin-bottom: 28px; }
+.page-title { font-size: 1.6rem; font-weight: 800; color: var(--gray1); }
+.page-subtitle { font-size: 0.9rem; color: var(--gray3); margin-top: 4px; }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--white); border-radius: var(--radius-lg);
+  border: 1px solid var(--gray5); box-shadow: var(--shadow-sm);
+  transition: all 0.25s ease;
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-body { padding: 24px; }
+.card-header { padding: 20px 24px 0; }
+.card-title { font-size: 1rem; font-weight: 700; color: var(--gray1); }
+.card-subtitle { font-size: 0.825rem; color: var(--gray3); margin-top: 3px; }
+
+/* ===== STAT CARDS ===== */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--white); border-radius: var(--radius-lg); padding: 22px;
+  border: 1px solid var(--gray5); box-shadow: var(--shadow-sm);
+  transition: all 0.25s; cursor: default;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.stat-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem; margin-bottom: 14px;
+}
+.stat-icon.green { background: #e8faf0; color: var(--g2); }
+.stat-icon.amber { background: #fffbeb; color: #d97706; }
+.stat-icon.blue { background: #eff6ff; color: #3b82f6; }
+.stat-icon.purple { background: #faf5ff; color: #7c3aed; }
+.stat-value { font-family: 'Sora', sans-serif; font-size: 1.7rem; font-weight: 800; color: var(--gray1); }
+.stat-label { font-size: 0.8rem; color: var(--gray3); margin-top: 3px; }
+.stat-change { font-size: 0.75rem; margin-top: 8px; font-weight: 500; }
+.stat-change.up { color: var(--g2); }
+.stat-change.down { color: #ef4444; }
+
+/* ===== DASHBOARD GRID ===== */
+.dash-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+
+/* ===== UPLOAD ZONE ===== */
+.upload-zone {
+  border: 2px dashed var(--g4); border-radius: var(--radius-lg);
+  padding: 48px 24px; text-align: center; cursor: pointer;
+  transition: all 0.2s; background: var(--g6); position: relative; overflow: hidden;
+}
+.upload-zone:hover, .upload-zone.drag-over { border-color: var(--g2); background: #e0f5e9; }
+.upload-icon {
+  width: 64px; height: 64px; background: var(--g5); border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; color: var(--g1); margin: 0 auto 16px;
+}
+.upload-title { font-weight: 700; font-size: 1rem; color: var(--gray1); margin-bottom: 6px; }
+.upload-sub { font-size: 0.825rem; color: var(--gray4); }
+.upload-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+#file-input { display: none; }
+
+.image-preview {
+  border-radius: var(--radius-lg); overflow: hidden; position: relative;
+  background: var(--gray5); min-height: 200px;
+}
+.image-preview img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.preview-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.6));
+  padding: 20px 16px 14px; display: flex; align-items: center; justify-content: space-between;
+}
+.preview-filename { color: white; font-size: 0.8rem; font-weight: 500; }
+
+/* ===== LOADING ===== */
+.detecting-overlay {
+  display: none; flex-direction: column; align-items: center;
+  justify-content: center; gap: 16px; padding: 32px;
+}
+.detecting-overlay.show { display: flex; }
+.detect-spinner {
+  width: 60px; height: 60px; border-radius: 50%;
+  border: 3px solid var(--g5); border-top-color: var(--g2);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.detecting-text { font-size: 0.9rem; color: var(--gray3); font-weight: 500; }
+
+/* ===== RESULT CARD ===== */
+.result-card {
+  background: linear-gradient(135deg, #e8faf0 0%, #ffffff 100%);
+  border: 1.5px solid var(--g5); border-radius: var(--radius-lg);
+  padding: 24px; display: none;
+}
+.result-card.show { display: block; animation: fadeUp 0.4s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.result-badge {
+  padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+  font-family: 'Sora', sans-serif;
+}
+.result-badge.warning { background: #fef3c7; color: #92400e; }
+.result-badge.success { background: #d1fae5; color: #065f46; }
+.result-badge.danger { background: #fee2e2; color: #991b1b; }
+.result-disease { font-size: 1.2rem; font-weight: 800; color: var(--gray1); font-family: 'Sora', sans-serif; }
+.confidence-bar-wrap { margin: 14px 0; }
+.confidence-label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--gray2); margin-bottom: 6px; }
+.confidence-bar { height: 8px; background: var(--gray5); border-radius: 20px; overflow: hidden; }
+.confidence-fill {
+  height: 100%; background: linear-gradient(90deg, var(--g3), var(--g1));
+  border-radius: 20px; transition: width 1s ease;
+}
+.solution-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--g5); }
+.solution-title { font-size: 0.8rem; font-weight: 700; color: var(--g1); margin-bottom: 10px; }
+.solution-item {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px;
+  background: white; border-radius: var(--radius-sm); margin-bottom: 8px;
+  border: 1px solid var(--g5); font-size: 0.85rem; color: var(--gray2);
+}
+.solution-item-icon { color: var(--g2); flex-shrink: 0; margin-top: 1px; }
+
+/* ===== HISTORY ===== */
+.history-list { display: flex; flex-direction: column; gap: 12px; }
+.history-item {
+  display: flex; align-items: center; gap: 16px; padding: 14px 18px;
+  background: var(--white); border-radius: var(--radius-md);
+  border: 1px solid var(--gray5); cursor: pointer; transition: all 0.2s;
+}
+.history-item:hover { border-color: var(--g4); background: var(--g6); transform: translateX(3px); }
+.history-img {
+  width: 52px; height: 52px; border-radius: 10px; background: var(--g5);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; overflow: hidden;
+}
+.history-disease { font-weight: 700; font-size: 0.9rem; color: var(--gray1); }
+.history-crop { font-size: 0.78rem; color: var(--gray4); margin-top: 2px; }
+.history-meta { text-align: right; margin-left: auto; }
+.history-date { font-size: 0.75rem; color: var(--gray4); }
+.history-conf { font-size: 0.8rem; font-weight: 600; color: var(--g2); margin-top: 3px; }
+
+/* ===== CHAT ===== */
+.chat-layout {
+  display: flex; flex-direction: column; background: var(--white);
+  border-radius: var(--radius-xl); border: 1px solid var(--gray5); overflow: hidden;
+  height: calc(100vh - 260px);
+}
+.chat-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--gray5);
+  display: flex; align-items: center; gap: 14px;
+  background: var(--glass); backdrop-filter: blur(10px);
+}
+.chat-ai-avatar {
+  width: 40px; height: 40px; background: linear-gradient(135deg, var(--g2), var(--g1));
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.1rem; flex-shrink: 0;
+}
+.chat-ai-name { font-weight: 700; font-size: 0.9rem; color: var(--gray1); }
+.chat-ai-status { font-size: 0.75rem; color: var(--g3); display: flex; align-items: center; gap: 5px; }
+.chat-ai-status::before { content: ''; width: 7px; height: 7px; background: var(--g3); border-radius: 50%; }
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 5px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--gray5); border-radius: 10px; }
+.msg { display: flex; gap: 10px; max-width: 75%; animation: fadeUp 0.3s ease; }
+.msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.msg.ai { align-self: flex-start; }
+.msg-avatar {
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
+}
+.msg.ai .msg-avatar { background: linear-gradient(135deg, var(--g3), var(--g1)); color: white; }
+.msg.user .msg-avatar { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+.msg-bubble { padding: 12px 16px; border-radius: 16px; font-size: 0.875rem; line-height: 1.6; }
+.msg.ai .msg-bubble { background: var(--g6); border: 1px solid var(--g5); color: var(--gray1); border-top-left-radius: 4px; }
+.msg.user .msg-bubble { background: linear-gradient(135deg, var(--g2), var(--g1)); color: white; border-top-right-radius: 4px; }
+.msg-time { font-size: 0.7rem; color: var(--gray4); margin-top: 5px; }
+.msg.ai .msg-time { text-align: left; }
+.msg.user .msg-time { text-align: right; }
+.chat-input-area { padding: 16px 20px; border-top: 1px solid var(--gray5); background: var(--white); }
+.chat-input-wrap {
+  display: flex; align-items: center; gap: 10px; background: var(--gray6);
+  border-radius: var(--radius-md); padding: 6px 6px 6px 16px;
+  border: 1.5px solid var(--gray5); transition: all 0.2s;
+}
+.chat-input-wrap:focus-within { border-color: var(--g3); background: var(--white); }
+.chat-input {
+  flex: 1; background: none; border: none; outline: none;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--gray1);
+  resize: none; max-height: 100px;
+}
+.chat-input::placeholder { color: var(--gray4); }
+.chat-send-btn {
+  width: 38px; height: 38px; border-radius: 11px;
+  background: linear-gradient(135deg, var(--g2), var(--g1));
+  border: none; cursor: pointer; color: white;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.chat-send-btn:hover { transform: scale(1.08); }
+.typing-indicator { display: flex; align-items: center; gap: 5px; padding: 8px 12px; }
+.typing-dot {
+  width: 7px; height: 7px; background: var(--g3); border-radius: 50%;
+  animation: typing 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+/* ===== SHOP ===== */
+.shop-toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+.search-box {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  background: var(--white); border: 1.5px solid var(--gray5);
+  border-radius: var(--radius-sm); padding: 10px 16px; max-width: 360px;
+}
+.search-box input { background: none; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; flex: 1; color: var(--gray1); }
+.filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 7px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 500;
+  cursor: pointer; border: 1.5px solid var(--gray5); background: var(--white); color: var(--gray3);
+  transition: all 0.2s;
+}
+.chip:hover, .chip.active { background: var(--g1); color: white; border-color: var(--g1); }
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+.product-card {
+  background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray5);
+  overflow: hidden; transition: all 0.25s; cursor: pointer;
+}
+.product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); border-color: var(--g5); }
+.product-img {
+  height: 160px; background: linear-gradient(135deg, var(--g6), var(--g5));
+  display: flex; align-items: center; justify-content: center; font-size: 3.5rem;
+  position: relative;
+}
+.product-badge {
+  position: absolute; top: 10px; right: 10px; background: var(--g2); color: white;
+  font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+}
+.product-info { padding: 16px; }
+.product-name { font-weight: 700; font-size: 0.9rem; color: var(--gray1); margin-bottom: 4px; }
+.product-category { font-size: 0.75rem; color: var(--gray4); margin-bottom: 10px; }
+.product-footer { display: flex; align-items: center; justify-content: space-between; }
+.product-price { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 800; color: var(--g1); }
+.product-add-btn {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--g3), var(--g2));
+  border: none; cursor: pointer; color: white;
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+  transition: all 0.2s;
+}
+.product-add-btn:hover { transform: scale(1.15); }
+.product-rating { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--gray4); margin-bottom: 8px; }
+.stars { color: #f59e0b; }
+
+/* ===== CART ===== */
+.cart-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; }
+.cart-items-list { display: flex; flex-direction: column; gap: 12px; }
+.cart-item {
+  display: flex; align-items: center; gap: 16px; padding: 16px;
+  background: var(--white); border-radius: var(--radius-md); border: 1px solid var(--gray5);
+}
+.cart-item-img {
+  width: 64px; height: 64px; border-radius: 12px; background: var(--g6);
+  display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;
+}
+.cart-item-info { flex: 1; }
+.cart-item-name { font-weight: 700; font-size: 0.9rem; color: var(--gray1); }
+.cart-item-sub { font-size: 0.78rem; color: var(--gray4); margin-top: 2px; }
+.qty-control { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.qty-btn {
+  width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--gray5);
+  background: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1rem; color: var(--gray2); transition: all 0.2s;
+}
+.qty-btn:hover { border-color: var(--g3); color: var(--g1); }
+.qty-value { font-weight: 700; font-size: 0.9rem; min-width: 24px; text-align: center; }
+.cart-item-price { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1rem; color: var(--g1); text-align: right; }
+.cart-remove { background: none; border: none; cursor: pointer; color: var(--gray4); transition: color 0.2s; font-size: 1rem; }
+.cart-remove:hover { color: #ef4444; }
+.order-summary {
+  background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray5);
+  padding: 24px; height: fit-content; position: sticky; top: 90px;
+}
+.summary-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; color: var(--gray1); }
+.summary-row { display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--gray3); margin-bottom: 12px; }
+.summary-total { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 800; color: var(--gray1); padding-top: 12px; border-top: 1px solid var(--gray5); margin-top: 4px; }
+.promo-box { display: flex; gap: 8px; margin: 20px 0; }
+.promo-input {
+  flex: 1; padding: 10px 14px; border: 1.5px solid var(--gray5); border-radius: var(--radius-sm);
+  font-size: 0.85rem; outline: none; font-family: 'DM Sans'; background: var(--white); color: var(--gray1);
+}
+.promo-input:focus { border-color: var(--g3); }
+
+/* ===== SETTINGS ===== */
+.settings-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+.settings-nav { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray5); padding: 16px; height: fit-content; }
+.settings-nav-item { padding: 10px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.875rem; font-weight: 500; color: var(--gray3); display: flex; align-items: center; gap: 10px; transition: all 0.2s; margin-bottom: 2px; }
+.settings-nav-item:hover { background: var(--g6); color: var(--g1); }
+.settings-nav-item.active { background: var(--g6); color: var(--g1); font-weight: 600; }
+.settings-panel { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--gray5); padding: 28px; }
+.settings-section-title { font-size: 1rem; font-weight: 700; color: var(--gray1); margin-bottom: 6px; }
+.settings-section-desc { font-size: 0.825rem; color: var(--gray4); margin-bottom: 24px; }
+.settings-divider { height: 1px; background: var(--gray5); margin: 24px 0; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--gray5); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 0.875rem; font-weight: 600; color: var(--gray1); }
+.toggle-desc { font-size: 0.78rem; color: var(--gray4); margin-top: 2px; }
+.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--gray5); border-radius: 12px; transition: 0.3s; }
+.toggle-slider::before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.toggle-switch input:checked + .toggle-slider { background: var(--g2); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+/* ===== EMPTY STATE ===== */
+.empty-state { text-align: center; padding: 48px 24px; color: var(--gray3); }
+.empty-state-icon { font-size: 3rem; margin-bottom: 14px; opacity: 0.4; }
+.empty-state-title { font-size: 1rem; font-weight: 700; color: var(--gray2); margin-bottom: 6px; }
+.empty-state-sub { font-size: 0.85rem; }
+
+/* ===== DARK MODE ===== */
+body.dark {
+  --white: #1a2233;
+  --gray6: #141a26;
+  --gray5: #2d3748;
+  --gray4: #718096;
+  --gray3: #a0aec0;
+  --gray2: #cbd5e0;
+  --gray1: #f7fafc;
+  --cream: #0f1624;
+  --glass: rgba(26,34,51,0.85);
+  --glass-border: rgba(255,255,255,0.08);
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  background: var(--g1); color: rgba(255,255,255,0.85);
+  padding: 48px 32px 24px; margin-left: var(--sidebar-w);
+}
+.footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 36px; }
+.footer-brand-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.footer-brand-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.footer-brand-name { font-family: 'Sora', sans-serif; font-size: 1.2rem; font-weight: 800; color: white; }
+.footer-desc { font-size: 0.85rem; line-height: 1.7; opacity: 0.7; max-width: 260px; }
+.footer-social { display: flex; gap: 10px; margin-top: 18px; }
+.social-btn { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.8); cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+.social-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+.footer-col-title { font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 700; color: white; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.06em; }
+.footer-links { display: flex; flex-direction: column; gap: 8px; }
+.footer-link { font-size: 0.85rem; opacity: 0.65; cursor: pointer; transition: opacity 0.2s; }
+.footer-link:hover { opacity: 1; }
+.footer-bottom { padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; opacity: 0.55; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1100px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; padding: 20px 16px; }
+  .footer { margin-left: 0; }
+  .sidebar-toggle { display: flex; }
+  .cart-layout { grid-template-columns: 1fr; }
+  .settings-grid { grid-template-columns: 1fr; }
+  .nav-center { display: none; }
+  .products-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .products-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== TAB SYSTEM ===== */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<div class="app-layout">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="nav-brand-icon">🌱</div>
+      <div>
+        <span class="nav-brand-name">Bhoomi AI</span>
+        <span class="nav-brand-beta">BETA</span>
+      </div>
+    </div>
+    <div class="nav-center">
+      <div class="nav-item active" id="nb-dashboard" onclick="switchTab('dashboard')">🏠 Dashboard</div>
+      <div class="nav-item" id="nb-chat" onclick="switchTab('chat')">🤖 AI Chat</div>
+      <div class="nav-item" id="nb-shop" onclick="switchTab('shop')">🛒 Shop</div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-icon-btn" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+      <button class="nav-icon-btn" onclick="switchTab('cart')">
+        🛒 <span class="nav-badge" id="cart-badge">3</span>
+      </button>
+      <button class="nav-icon-btn">🔔 <span class="nav-badge">2</span></button>
+      <div class="nav-avatar" onclick="switchTab('settings')" title="Settings">{{ name[0]|upper }}{{ name.split(' ')[1][0]|upper }}
+      </div>
+    </div>
+  </nav>
+
+  <!-- BODY -->
+  <div class="app-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Main</div>
+        <div class="sidebar-item active" id="sb-dashboard" onclick="switchTab('dashboard')">
+          <div class="sidebar-icon">🏠</div> Dashboard
+        </div>
+        <div class="sidebar-item" id="sb-chat" onclick="switchTab('chat')">
+          <div class="sidebar-icon">🤖</div> AI Assistant
+          <span class="sidebar-badge">New</span>
+        </div>
+        <div class="sidebar-item" id="sb-shop" onclick="switchTab('shop')">
+          <div class="sidebar-icon">🛒</div> Shop
+        </div>
+        <div class="sidebar-item" id="sb-cart" onclick="switchTab('cart')">
+          <div class="sidebar-icon">🛍️</div> Cart
+          <span class="sidebar-badge" id="sb-cart-badge">3</span>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Records</div>
+        <div class="sidebar-item" id="sb-history" onclick="switchTab('history')">
+          <div class="sidebar-icon">📊</div> History
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Account</div>
+        <div class="sidebar-item" id="sb-settings" onclick="switchTab('settings')">
+          <div class="sidebar-icon">⚙️</div> Settings
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-avatar">{{ name[0]|upper }}{{ name.split(' ')[1][0]|upper }}
+          </div>
+          <div>
+            <div class="sidebar-user-name">{{ name }}</div>
+            <div class="sidebar-user-role">Pro Farmer</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="tab-panel active" id="tab-dashboard">
+        <div class="page-header">
+          <div class="page-title">Good morning {{ name }}👋🏻</div>
+          <div class="page-subtitle">Monitor your crops &amp; detect diseases instantly with AI</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon green">🌿</div>
+            <div class="stat-value">142</div>
+            <div class="stat-label">Total Scans</div>
+            <div class="stat-change up">↑ +12 this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber">⚠️</div>
+            <div class="stat-value">8</div>
+            <div class="stat-label">Diseases Detected</div>
+            <div class="stat-change down">↓ -2 from last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">📈</div>
+            <div class="stat-value">96%</div>
+            <div class="stat-label">Crop Health Score</div>
+            <div class="stat-change up">↑ +3% improved</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">💰</div>
+            <div class="stat-value">₹2,840</div>
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-change up">↑ Last 30 days</div>
+          </div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-header" style="margin-bottom:16px;">
+              <div class="card-title">🔬 Crop Disease Detector</div>
+              <div class="card-subtitle">Upload a photo of your crop leaf to identify diseases</div>
+            </div>
+            <div class="card-body" style="padding-top:0;">
+              <div class="upload-zone" id="upload-zone"
+                onclick="document.getElementById('file-input').click()"
+                ondragover="handleDrag(event)"
+                ondrop="handleDrop(event)"
+                ondragleave="handleDragLeave(event)">
+                <div id="upload-placeholder">
+                  <div class="upload-icon">📷</div>
+                  <div class="upload-title">Drop your crop image here</div>
+                  <div class="upload-sub">Supports JPG, PNG, WEBP — max 10MB</div>
+                  <div class="upload-actions">
+                    <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();document.getElementById('file-input').click()">📤 Browse Files</button>
+                    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();showToast('Camera feature on mobile','success')">📷 Camera</button>
+                  </div>
+                </div>
+                <div id="image-preview-wrap" style="display:none;width:100%;">
+                  <div class="image-preview">
+                    <img id="preview-img" src="" alt="Preview">
+                    <div class="preview-overlay">
+                      <span class="preview-filename" id="preview-name"></span>
+                      <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:none;" onclick="event.stopPropagation();clearUpload()">✕</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
+
+              <div class="detecting-overlay" id="detecting-overlay">
+                <div class="detect-spinner"></div>
+                <div class="detecting-text">Analyzing crop with AI...</div>
+                <div style="font-size:0.78rem;color:var(--gray4);">This may take a few seconds</div>
+              </div>
+
+              <button class="btn btn-primary btn-full" style="margin-top:16px;" id="detect-btn" onclick="runDetection()" disabled>
+                🔍 Detect Disease
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="result-card" id="result-card">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                <span class="result-badge warning" id="result-severity">Moderate</span>
+                <div style="font-size:0.75rem;color:var(--gray4);">AI Diagnosis Result</div>
+              </div>
+              <div class="result-disease" id="result-disease">Leaf Blight (Alternaria)</div>
+              <div class="confidence-bar-wrap">
+                <div class="confidence-label"><span>Confidence Score</span><span id="conf-val">87%</span></div>
+                <div class="confidence-bar"><div class="confidence-fill" id="conf-bar" style="width:0%"></div></div>
+              </div>
+              <div class="solution-section">
+                <div class="solution-title">💡 AI-Suggested Treatment</div>
+                <div class="solution-item"><span class="solution-item-icon">✓</span> Apply copper-based fungicide every 7-10 days for 3 weeks.</div>
+                <div class="solution-item"><span class="solution-item-icon">✓</span> Remove infected leaves and burn them away from the field.</div>
+                <div class="solution-item"><span class="solution-item-icon">✓</span> Avoid overhead irrigation; water at the base of plants.</div>
+                <div class="solution-item"><span class="solution-item-icon">✓</span> Ensure proper row spacing for adequate air circulation.</div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:16px;">
+                <button class="btn btn-primary btn-sm" onclick="switchTab('chat')">🤖 Ask AI</button>
+                <button class="btn btn-secondary btn-sm" onclick="switchTab('shop')">🛒 Buy Medicine</button>
+              </div>
+            </div>
+            <div class="card" id="placeholder-result">
+              <div class="card-body">
+                <div class="empty-state">
+                  <div class="empty-state-icon">🧪</div>
+                  <div class="empty-state-title">No Detection Yet</div>
+                  <div class="empty-state-sub">Upload a crop image and click "Detect Disease" to get AI diagnosis</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+          <div class="card-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+              <div>
+                <div class="card-title">📋 Recent Detections</div>
+                <div class="card-subtitle">Your last crop scan results</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="switchTab('history')">View All →</button>
+            </div>
+            <div class="history-list">
+              <div class="history-item"><div class="history-img">🌿</div><div style="flex:1"><div class="history-disease">Powdery Mildew</div><div class="history-crop">Tomato Leaf · 2 days ago</div></div><div class="history-meta"><div class="history-date">March 26, 2026</div><div class="history-conf">92% conf.</div></div></div>
+              <div class="history-item"><div class="history-img">🍃</div><div style="flex:1"><div class="history-disease">Healthy Crop ✅</div><div class="history-crop">Wheat Stem · 4 days ago</div></div><div class="history-meta"><div class="history-date">March 24, 2026</div><div class="history-conf">99% conf.</div></div></div>
+              <div class="history-item"><div class="history-img">🌾</div><div style="flex:1"><div class="history-disease">Rust Fungus</div><div class="history-crop">Rice Leaf · 1 week ago</div></div><div class="history-meta"><div class="history-date">March 21, 2026</div><div class="history-conf">78% conf.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CHAT ===== -->
+      <div class="tab-panel" id="tab-chat">
+        <div class="page-header">
+          <div class="page-title">🤖 AI Assistant</div>
+          <div class="page-subtitle">Ask anything about farming, crops, weather, or market prices</div>
+        </div>
+        <div class="chat-layout">
+          <div class="chat-header">
+            <div class="chat-ai-avatar">🌱</div>
+            <div>
+              <div class="chat-ai-name">Bhoomi AI Assistant</div>
+              <div class="chat-ai-status">Online — Ready to help</div>
+            </div>
+            <div style="margin-left:auto;">
+              <button class="btn btn-secondary btn-sm" onclick="clearChat()">🗑️ Clear</button>
+            </div>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="msg ai">
+              <div class="msg-avatar">🌱</div>
+              <div>
+                <div class="msg-bubble">Namaste! 🙏 I'm your Bhoomi AI farming assistant. I can help you with:<br><br>• 🔬 Crop disease identification &amp; treatment<br>• 🌦️ Weather-based farming advice<br>• 💰 Market prices &amp; selling strategies<br>• 🌱 Sowing &amp; harvesting schedules<br><br>How can I help your farm today?</div>
+                <div class="msg-time">9:00 AM</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <div class="chat-input-wrap">
+              <textarea class="chat-input" id="chat-input" placeholder="Ask about crops, diseases, weather, prices..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+              <button class="chat-send-btn" onclick="sendChat()">➤</button>
+            </div>
+            <div style="text-align:center;font-size:0.72rem;color:var(--gray4);margin-top:8px;">
+              Powered by Bhoomi AI • Always consult a local agronomist
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SHOP ===== -->
+      <div class="tab-panel" id="tab-shop">
+        <div class="page-header">
+          <div class="page-title">🛒 Agri Shop</div>
+          <div class="page-subtitle">Premium seeds, fertilizers, tools &amp; pesticides — delivered to your door</div>
+        </div>
+        <div class="shop-toolbar">
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" placeholder="Search products..." oninput="filterProducts(this.value)">
+          </div>
+          <div class="filter-chips">
+            <div class="chip active" onclick="filterCategory('all',this)">All</div>
+            <div class="chip" onclick="filterCategory('seeds',this)">🌱 Seeds</div>
+            <div class="chip" onclick="filterCategory('fertilizer',this)">🧪 Fertilizers</div>
+            <div class="chip" onclick="filterCategory('tools',this)">🔧 Tools</div>
+            <div class="chip" onclick="filterCategory('pesticide',this)">🛡️ Pesticides</div>
+          </div>
+        </div>
+        <div class="products-grid" id="products-grid"></div>
+      </div>
+
+      <!-- ===== CART ===== -->
+      <div class="tab-panel" id="tab-cart">
+        <div class="page-header">
+          <div class="page-title">🛒 My Cart</div>
+          <div class="page-subtitle">Review your items before checkout</div>
+        </div>
+        <div class="cart-layout">
+          <div>
+            <div class="cart-items-list" id="cart-items-list"></div>
+          </div>
+          <div class="order-summary">
+            <div class="summary-title">Order Summary</div>
+            <div class="summary-row"><span>Subtotal</span><span id="subtotal-val">₹1,580</span></div>
+            <div class="summary-row"><span>Delivery Fee</span><span style="color:var(--g2);">FREE</span></div>
+            <div class="summary-row"><span>Discount</span><span style="color:#ef4444;">-₹150</span></div>
+            <div class="promo-box">
+              <input class="promo-input" placeholder="Promo code (try KISAN20)" id="promo-code">
+              <button class="btn btn-secondary btn-sm" onclick="applyPromo()">Apply</button>
+            </div>
+            <div class="summary-total"><span>Total</span><span id="total-val">₹1,430</span></div>
+            <button class="btn btn-primary btn-full" style="margin-top:20px;" onclick="checkout()">
+              🔒 Secure Checkout
+            </button>
+            <button class="btn btn-ghost btn-full" style="margin-top:10px;" onclick="switchTab('shop')">
+              ← Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== HISTORY ===== -->
+      <div class="tab-panel" id="tab-history">
+        <div class="page-header">
+          <div class="page-title">📊 Detection History</div>
+          <div class="page-subtitle">All your crop scan records and AI analysis results</div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="history-list">
+              <div class="history-item"><div class="history-img">🌿</div><div style="flex:1"><div class="history-disease">Powdery Mildew</div><div class="history-crop">Tomato Leaf · Scan #142</div></div><div class="history-meta"><div class="history-date">March 26, 2026</div><div class="history-conf">92% conf.</div></div></div>
+              <div class="history-item"><div class="history-img">🍃</div><div style="flex:1"><div class="history-disease">Healthy Crop ✅</div><div class="history-crop">Wheat Stem · Scan #141</div></div><div class="history-meta"><div class="history-date">March 24, 2026</div><div class="history-conf">99% conf.</div></div></div>
+              <div class="history-item"><div class="history-img">🌾</div><div style="flex:1"><div class="history-disease">Rust Fungus</div><div class="history-crop">Rice Leaf · Scan #140</div></div><div class="history-meta"><div class="history-date">March 21, 2026</div><div class="history-conf">78% conf.</div></div></div>
+              <div class="history-item"><div class="history-img">🥬</div><div style="flex:1"><div class="history-disease">Leaf Blight</div><div class="history-crop">Spinach · Scan #139</div></div><div class="history-meta"><div class="history-date">March 19, 2026</div><div class="history-conf">85% conf.</div></div></div>
+              <div class="history-item"><div class="history-img">🌽</div><div style="flex:1"><div class="history-disease">Aphid Infestation</div><div class="history-crop">Corn Leaf · Scan #138</div></div><div class="history-meta"><div class="history-date">March 15, 2026</div><div class="history-conf">91% conf.</div></div></div>
+              <div class="history-item"><div class="history-img">🍅</div><div style="flex:1"><div class="history-disease">Healthy Crop ✅</div><div class="history-crop">Tomato Fruit · Scan #137</div></div><div class="history-meta"><div class="history-date">March 12, 2026</div><div class="history-conf">97% conf.</div></div></div>
+              <div class="history-item"><div class="history-img">🌶️</div><div style="flex:1"><div class="history-disease">Anthracnose</div><div class="history-crop">Chilli Leaf · Scan #136</div></div><div class="history-meta"><div class="history-date">March 10, 2026</div><div class="history-conf">83% conf.</div></div></div>
+              <div class="history-item"><div class="history-img">🫒</div><div style="flex:1"><div class="history-disease">Downy Mildew</div><div class="history-crop">Groundnut · Scan #135</div></div><div class="history-meta"><div class="history-date">March 7, 2026</div><div class="history-conf">76% conf.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SETTINGS ===== -->
+      <div class="tab-panel" id="tab-settings">
+        <div class="page-header">
+          <div class="page-title">⚙️ Settings</div>
+          <div class="page-subtitle">Manage your account preferences and app settings</div>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-nav">
+            <div class="settings-nav-item active" onclick="settingsNav(this)">👤 Profile</div>
+            <div class="settings-nav-item" onclick="settingsNav(this)">🔔 Notifications</div>
+            <div class="settings-nav-item" onclick="settingsNav(this)">🌐 Language</div>
+            <div class="settings-nav-item" onclick="settingsNav(this)">🛡️ Privacy</div>
+            <div class="settings-nav-item" onclick="settingsNav(this)">🎨 Appearance</div>
+          </div>
+          <div class="settings-panel">
+            <form action="/profile" method="POST">
+            <div class="settings-section-title">Profile Information</div>
+            <div class="settings-section-desc">Update your personal details and farming preferences</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div class="input-group" style="margin:0">
+                <label>Full Name</label>
+                <input class="input-field" value="{{name}}" name ="name" >
+              </div>
+              <div class="input-group" style="margin:0">
+                <label>PHONE</label>
+                <input class="input-field" value="{{mobile}}" name = "mobile">
+              </div>
+            </div>
+            <div class="input-group">
+              <label>EMAIL</label>
+              <input class="input-field" value="{{email}}" name = "email">
+            </div>
+            <div class="input-group">
+              <label>FARM LOCATION</label>
+              <input class="input-field" placeholder="Village / District / State" name = "location">
+            </div>
+            <div class="input-group">
+              <label>PRIMARY CROP</label>
+              <select class="input-field" name = "crop">
+                <option>Tomato</option><option>Wheat</option><option>Rice</option><option>Cotton</option><option>Sugarcane</option>
+              </select>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="settings-section-title">Notifications</div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Disease Alerts</div><div class="toggle-desc">Get notified about outbreaks in your region</div></div>
+              <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Market Price Updates</div><div class="toggle-desc">Daily crop price notifications</div></div>
+              <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Weather Warnings</div><div class="toggle-desc">Severe weather alerts for your farm location</div></div>
+              <label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Order Updates</div><div class="toggle-desc">Track your shop orders in real-time</div></div>
+              <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="settings-section-title">Language</div>
+            <div class="input-group" style="margin-top:12px;">
+              <label>APP LANGUAGE</label>
+              <select class="input-field" name = "language">
+                <option>English</option>
+                <option>हिंदी (Hindi)</option>
+                <option>తెలుగు (Telugu)</option>
+                <option>தமிழ் (Tamil)</option>
+                <option>ಕನ್ನಡ (Kannada)</option>
+                <option>मराठी (Marathi)</option>
+              </select>
+            </div>
+            <button  class="btn btn-primary" onclick="showToast('Settings saved successfully!','success')" type="submit">
+              💾 Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+    </main>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand-wrap">
+          <div class="footer-brand-icon">🌱</div>
+          <div class="footer-brand-name">Bhoomi AI</div>
+        </div>
+        <div class="footer-desc">India's most trusted AI-powered agriculture platform. Helping farmers grow smarter with cutting-edge technology.</div>
+        <div class="footer-social">
+          <div class="social-btn">🐦</div>
+          <div class="social-btn">📸</div>
+          <div class="social-btn">👥</div>
+          <div class="social-btn">▶️</div>
+          <div class="social-btn">💬</div>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Platform</div>
+        <div class="footer-links">
+          <div class="footer-link">Disease Detection</div>
+          <div class="footer-link">AI Assistant</div>
+          <div class="footer-link">Agri Shop</div>
+          <div class="footer-link">Market Prices</div>
+          <div class="footer-link">Weather Forecast</div>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <div class="footer-links">
+          <div class="footer-link">About Us</div>
+          <div class="footer-link">Our Team</div>
+          <div class="footer-link">Blog &amp; Research</div>
+          <div class="footer-link">Careers</div>
+          <div class="footer-link">Press Kit</div>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Contact</div>
+        <div class="footer-links">
+          <div class="footer-link">📧 help@bhoomi.ai</div>
+          <div class="footer-link">📞 1800-BHOOMI (Toll-free)</div>
+          <div class="footer-link">📍 Hyderabad, Telangana</div>
+          <div class="footer-link" style="margin-top:12px;">Privacy Policy</div>
+          <div class="footer-link">Terms of Service</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Bhoomi AI Technologies Pvt. Ltd. All rights reserved.</span>
+      <span>Made with 💚 for Indian Farmers</span>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+// ===== DATA =====
+const products = [
+  {id:1,name:"Organic Neem Cake",cat:"fertilizer",price:"₹299",emoji:"🌿",badge:"Organic",rating:"4.8",reviews:"2.3k"},
+  {id:2,name:"Hybrid Tomato Seeds",cat:"seeds",price:"₹149",emoji:"🍅",badge:"Best Seller",rating:"4.9",reviews:"5.1k"},
+  {id:3,name:"Garden Sprayer 5L",cat:"tools",price:"₹649",emoji:"🔧",badge:"New",rating:"4.6",reviews:"890"},
+  {id:4,name:"Bio NPK Fertilizer",cat:"fertilizer",price:"₹399",emoji:"🧪",badge:"",rating:"4.7",reviews:"1.2k"},
+  {id:5,name:"BT Pesticide 250ml",cat:"pesticide",price:"₹189",emoji:"🛡️",badge:"Eco-safe",rating:"4.5",reviews:"670"},
+  {id:6,name:"Wheat Seeds 1kg",cat:"seeds",price:"₹225",emoji:"🌾",badge:"Premium",rating:"4.8",reviews:"3.4k"},
+  {id:7,name:"Drip Irrigation Kit",cat:"tools",price:"₹1,299",emoji:"💧",badge:"Save Water",rating:"4.7",reviews:"540"},
+  {id:8,name:"Fungicide Copper",cat:"pesticide",price:"₹345",emoji:"🟤",badge:"",rating:"4.4",reviews:"420"},
+];
+
+let cartData = [
+  {name:"Hybrid Tomato Seeds",cat:"Premium Quality",emoji:"🍅",price:149,qty:2},
+  {name:"Bio NPK Fertilizer",cat:"1kg Pack",emoji:"🧪",price:399,qty:1},
+  {name:"Garden Sprayer 5L",cat:"Manual Pump",emoji:"🔧",price:649,qty:1},
+];
+
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  renderProducts(products);
+  renderCart();
+});
+
+// ===== TAB NAVIGATION =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const sb = document.getElementById('sb-' + tab);
+  if(sb) sb.classList.add('active');
+  const nb = document.getElementById('nb-' + tab);
+  if(nb) nb.classList.add('active');
+  if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ===== UPLOAD & DETECTION =====
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if(file) loadPreview(file);
+}
+function handleDrag(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.add('drag-over');
+}
+function handleDragLeave(e) {
+  document.getElementById('upload-zone').classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) loadPreview(file);
+  else showToast('Please drop an image file', 'error');
+}
+function loadPreview(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('preview-img').src = e.target.result;
+    document.getElementById('preview-name').textContent = file.name;
+    document.getElementById('upload-placeholder').style.display = 'none';
+    document.getElementById('image-preview-wrap').style.display = 'block';
+    document.getElementById('detect-btn').disabled = false;
+    showToast('Image loaded! Ready for detection ✅', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+function clearUpload() {
+  document.getElementById('upload-placeholder').style.display = 'block';
+  document.getElementById('image-preview-wrap').style.display = 'none';
+  document.getElementById('detect-btn').disabled = true;
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('placeholder-result').style.display = 'block';
+  document.getElementById('file-input').value = '';
+  document.getElementById('detect-btn').innerHTML = '🔍 Detect Disease';
+}
+function runDetection() {
+  const detecting = document.getElementById('detecting-overlay');
+  const btn = document.getElementById('detect-btn');
+  document.getElementById('image-preview-wrap').style.display = 'none';
+  detecting.classList.add('show');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Analyzing...';
+  setTimeout(() => {
+    detecting.classList.remove('show');
+    document.getElementById('image-preview-wrap').style.display = 'block';
+    btn.innerHTML = '✅ Analysis Complete';
+    document.getElementById('placeholder-result').style.display = 'none';
+    document.getElementById('result-card').classList.add('show');
+    const conf = 87;
+    document.getElementById('conf-val').textContent = conf + '%';
+    setTimeout(() => { document.getElementById('conf-bar').style.width = conf + '%'; }, 100);
+    showToast('Disease detected! Check the results card 🔬', 'success');
+  }, 3000);
+}
+
+// ===== CHAT =====
+function handleChatKey(e) {
+  if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if(!msg) return;
+  addMsg(msg, 'user');
+  input.value = ''; input.style.height = 'auto';
+  const tid = addTyping();
+  setTimeout(() => {
+    removeTyping(tid);
+    addMsg(aiResponses[aiIndex % aiResponses.length], 'ai');
+    aiIndex++;
+  }, 1200 + Math.random() * 800);
+}
+function addMsg(text, role) {
+  const container = document.getElementById('chat-messages');
+  const now = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `
+    <div class="msg-avatar">${role === 'ai' ? '🌱' : '👤'}</div>
+    <div>
+      <div class="msg-bubble">${text}</div>
+      <div class="msg-time">${now}</div>
+    </div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+function addTyping() {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ai'; div.id = 'typing-' + Date.now();
+  div.innerHTML = `<div class="msg-avatar">🌱</div><div><div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
+  container.appendChild(div); container.scrollTop = container.scrollHeight;
+  return div.id;
+}
+function removeTyping(id) { const el = document.getElementById(id); if(el) el.remove(); }
+function clearChat() {
+  document.getElementById('chat-messages').innerHTML = '';
+  addMsg('Chat cleared! How can I help your farm today? 🌱', 'ai');
+}
+
+// ===== PRODUCTS =====
+function renderProducts(list) {
+  const grid = document.getElementById('products-grid');
+  if(!grid) return;
+  grid.innerHTML = list.map(p => `
+    <div class="product-card">
+      <div class="product-img">
+        ${p.emoji}
+        ${p.badge ? `<div class="product-badge">${p.badge}</div>` : ''}
+      </div>
+      <div class="product-info">
+        <div class="product-rating"><span class="stars">★★★★★</span> ${p.rating} (${p.reviews})</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-category">${p.cat.charAt(0).toUpperCase() + p.cat.slice(1)}</div>
+        <div class="product-footer">
+          <div class="product-price">${p.price}</div>
+          <button class="product-add-btn" onclick="addToCart('${p.name}')">+</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function filterProducts(query) {
+  const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+  renderProducts(filtered);
+}
+function filterCategory(cat, el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderProducts(cat === 'all' ? products : products.filter(p => p.cat === cat));
+}
+function addToCart(name) { showToast(`${name} added to cart! 🛒`, 'success'); }
+
+// ===== CART =====
+function renderCart() {
+  const list = document.getElementById('cart-items-list');
+  if(!list) return;
+  list.innerHTML = cartData.map((item, i) => `
+    <div class="cart-item">
+      <div class="cart-item-img">${item.emoji}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-sub">${item.cat}</div>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty(${i}, -1)">−</button>
+          <span class="qty-value">${item.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${i}, 1)">+</button>
+        </div>
+      </div>
+      <div>
+        <div class="cart-item-price">₹${(item.price * item.qty).toLocaleString('en-IN')}</div>
+        <button class="cart-remove" onclick="removeCartItem(${i})">🗑️</button>
+      </div>
+    </div>`).join('');
+  updateTotals();
+}
+function changeQty(i, delta) {
+  cartData[i].qty = Math.max(1, cartData[i].qty + delta);
+  renderCart();
+}
+function removeCartItem(i) {
+  cartData.splice(i, 1); renderCart();
+  showToast('Item removed from cart', 'error');
+}
+function updateTotals() {
+  const sub = cartData.reduce((s, i) => s + (i.price * i.qty), 0);
+  document.getElementById('subtotal-val').textContent = '₹' + sub.toLocaleString('en-IN');
+  document.getElementById('total-val').textContent = '₹' + Math.max(0, sub - 150).toLocaleString('en-IN');
+  const count = cartData.length;
+  document.getElementById('cart-badge').textContent = count;
+  const sbBadge = document.getElementById('sb-cart-badge');
+  if(sbBadge) sbBadge.textContent = count;
+}
+function applyPromo() {
+  const code = document.getElementById('promo-code').value;
+  if(code.toUpperCase() === 'KISAN20') showToast('Promo code applied! 20% off 🎉', 'success');
+  else showToast('Invalid promo code', 'error');
+}
+function checkout() {
+  if(cartData.length === 0) { showToast('Your cart is empty!', 'error'); return; }
+  showToast('Order placed successfully! 🎉 Delivery in 3-5 days', 'success');
+  cartData = [];
+  renderCart();
+}
+
+// ===== SETTINGS =====
+function settingsNav(el) {
+  document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ===== DARK MODE =====
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  showToast(document.body.classList.contains('dark') ? 'Dark mode on 🌙' : 'Light mode on ☀️', 'success');
+}
+
+// ===== TOAST =====
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-icon">${type === 'success' ? '✅' : '❌'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+</script>
+<script>
+  async function sendChat() {
+      const input = document.getElementById("chat-input");
+      const message = input.value.trim();
+  
+      if (!message) return;
+  
+      addMessage(message, "user");
+      input.value = "";
+  
+      // 🔥 Show typing indicator
+      const typing = showTyping();
+  
+      try {
+          const res = await fetch("http://127.0.0.1:8000/chat", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                  message: message,
+                  session_id: "{{email}}"
+              })
+          });
+  
+          const data = await res.json();
+  
+          typing.remove(); // remove typing
+  
+          addMessage(data.reply, "ai");
+  
+      } catch (error) {
+          typing.remove();
+          addMessage("Server error. Try again.", "ai");
+      }
+  }
+  </script>
+  <script>
+    function addMessage(text, type) {
+        const chatBox = document.getElementById("chat-messages");
+    
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "msg " + type;
+    
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+        msgDiv.innerHTML = `
+            <div class="msg-avatar">${type === "ai" ? "🌱" : "👤"}</div>
+            <div>
+                <div class="msg-bubble">${text}</div>
+                <div class="msg-time">${time}</div>
+            </div>
+        `;
+    
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    </script>
+    <script>
+      function showTyping() {
+          const chatBox = document.getElementById("chat-messages");
+      
+          const typingDiv = document.createElement("div");
+          typingDiv.className = "msg ai";
+      
+          typingDiv.innerHTML = `
+              <div class="msg-avatar">🌱</div>
+              <div class="typing-indicator">
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+                  <div class="typing-dot"></div>
+              </div>
+          `;
+      
+          chatBox.appendChild(typingDiv);
+          chatBox.scrollTop = chatBox.scrollHeight;
+      
+          return typingDiv;
+      }
+      </script>
+      <script>
+        function clearChat() {
+            const chatBox = document.getElementById("chat-messages");
+            chatBox.innerHTML = "";
+        }
+        </script>
+
+</body>
+</html>
